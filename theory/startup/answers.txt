@@ -9,5 +9,11 @@ Clock speed measures rate at which circuits could be clocked. Higher clock speed
 3. What are some ways we might measure and compare computer capability? List FLOPS and two options, discuss strengths/weaknesses of each.
 We can measure and compare computer capability using a variety of different measures.
 I. FLOPS
-II.
-III.
+  strengths: commonly used
+  weaknesses: can be tricked by using smart hacks, depends on the architecture
+II. Power Consumption
+  strengths: good theoretical overview from Physics side
+  weaknesses: hard to translate to other computational measures
+III. Number of Transistors
+  strengths: basis of Moore's law
+  weaknesses: gives different results for serial VS parallel programs
