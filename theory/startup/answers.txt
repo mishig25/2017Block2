@@ -1,0 +1,13 @@
+1. What is Moore's Law and why is it relevant to computing?
+Moore's Law is an observation that states number of silicon chips in a computer doubles every 2 years.
+It is relevant to computing since more transistors can do more computations; therefore, according to Moore's law, we should be getting a double increase in our computational power every two years.
+
+2. What is the significance of processor clock speed? If we measure processor computational power as FLOPS, how could a 500 Mhz processor out perform a 1 Ghz processor?
+Clock speed measures rate at which circuits could be clocked. Higher clock speed means higher performance.
+500 Mhz processor can perform a 1 Ghz processor by running a parallel version of executions the 1 Ghz processor running serially.
+
+3. What are some ways we might measure and compare computer capability? List FLOPS and two options, discuss strengths/weaknesses of each.
+We can measure and compare computer capability using a variety of different measures.
+I. FLOPS
+II.
+III.
