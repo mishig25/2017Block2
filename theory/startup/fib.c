@@ -6,7 +6,7 @@ int fib(int n){
   else return fib(n-1)+fib(n-2);
 }
 
-int main(){
+int main(int argc, char** argv){
   int i = 1;
   while(i<=5){
     int fib_number = fib(i);
