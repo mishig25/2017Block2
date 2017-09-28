@@ -1,0 +1,8 @@
+1. Three of the pitfalls listed in the text are Race Conditions, Strangled Scaling, and Deadlocks.
+Race Conditions - concurrent processes access same memory location without proper sync. Ways to avoid: use locks to lock and unlock that memory region.
+Strangled Scaling - over-usage of locks increases the time spent running a program as there are more serial executions after many locks. Ways to avoid: use fine-grain locking, us higher level patterns that do not require locks.
+Deadlocks - when two tasks wait for each other and cannot proceed until the other task is done. Ways to avoid: hold at most one lock at a time, avoid mutexes when possible, startify the mutexes.
+
+2. What is load imbalance? On Tuesday we talked a bunch about how we might model parallel performance, does load imbalance break/change/complicate reasoning about performance in these models?
+Load imbalance - uneven distribution of work across workers.
+Load imbalance suggest us to use over-decomposition. Over-decomposition is dividing the work into more tasks than there are workers in order to distribute work loads as evenly as possible among workers.
