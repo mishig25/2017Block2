@@ -26,15 +26,15 @@ void proc_a() {
 
 void proc_b() {
     int x,y;
-    // lock b so that the value won't change unexpectedly
-    omp_set_lock(&lockB);
-    x = B;
-    x = x/2;
     // lock a during modification
     omp_set_lock(&lockA);
     y = A;
     y += x;
     A = y;
+    // lock b so that the value won't change unexpectedly
+    omp_set_lock(&lockB);
+    x = B;
+    x = x/2;
     // update B and release locks
     B = x;
     omp_unset_lock(&lockA);
