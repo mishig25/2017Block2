@@ -1,0 +1,21 @@
+1. Three C functions were mentioned in class for reading data from a file. What are they and how do they differ
+from one another?
+The three C functions for reading data from file are: fscanf, fgets, fread. They require different arguments and handle errors differently.
+All of them are included in stdio and should behave similarly on most cases.
+
+2. Variables in a program can be allocated on the stack or in the heap.
+What is the difference between the stack and the heap with respect to persistence of the data (when is
+memory space reclaimed)?
+Static memory allocation uses Stack, and dynamic memory allocation uses Heap. Stack has a fixed size,
+whereas Heap size can change dynamically. Data on Heap is persistent, while data on Stack is NOT. As soon
+as the function associated with data on Stack returns, the data gets cleaned from Stack.
+
+3. Most modern programming languages have objects but do not have structs. Are modern languages losing
+any functionality by not have structs? Explain your answer.
+On a higher level structs look like objects that can only have fields. By not having structs, modern languages
+like Java are losing ability to directly access memory addresses of the fields.
+
+4. C does not have objects though C++ does. Even though C does not have objects, can C be used to
+implement a program using object-like logic? Explain your answer.
+Yes. We can use structs as objects. Structs already have fields. For class methods, we can write functions
+that act upon/manipulate the struct fields. Therefore, we get the essential blocks for building object-like logic.
