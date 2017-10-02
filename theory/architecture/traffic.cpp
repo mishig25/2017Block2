@@ -13,6 +13,7 @@ struct LinkedRecord{
 int parse_line(string line){
   string year_next = line.substr(6,4);
   // REFERENCED FROM: https://stackoverflow.com/a/16575025/6558628
+  // lines 17-18
   char * isNumber;
   int year_n = strtol(year_next.c_str(), &isNumber, 10) ;
   int year = -1;
@@ -51,6 +52,7 @@ int main(int argc, char** argv){
   LinkedRecord *head = new LinkedRecord();
 
   // REFERENCED FROM: https://gsamaras.wordpress.com/code/read-file-line-by-line-in-c-and-c/
+  // lines 56-60
   ifstream infile(fname);
   string line;
   // throw away header line and process data
