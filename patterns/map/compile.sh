@@ -4,9 +4,7 @@
 gcc -o serial serial.c -lcrypto -lm
 
 # Compile the OpenMP version
-gcc -o openmp -fopenmp openmp.c -lcrypto
+gcc -o recover_pins_openmp -fopenmp openmp.c -lcrypto
 
 # Compile the cilkplus version
-gcc -o cilk -fcilkplus cilk.c -lcrypto
-
-# recover_pins_
+gcc -o recover_pins_cilk -fcilkplus cilk.c -lcrypto

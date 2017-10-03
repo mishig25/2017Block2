@@ -113,6 +113,7 @@ int main(int argc, char** argv) {
         printf("Usage: %s <password hash>\n",argv[0]);
         return 1;
     }
+    
     start_parallel_check(argv[1]);
 
     return EXIT_SUCCESS;

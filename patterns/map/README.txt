@@ -30,11 +30,3 @@ To recover a pin using the OpenMP version:
 
 To recover a pin using the cilkplus version:
 ./recover_pins_cilk dd4b21e9ef71e1291183a46b913ae6f2
-
-To recover a pin using the tbb version:
-./recover_pins_tbb dd4b21e9ef71e1291183a46b913ae6f2
-
-To recover a pin using the MPI version:
-srun -N1 -n32 ./recover_pins_mpi dd4b21e9ef71e1291183a46b913ae6f2
-
-
