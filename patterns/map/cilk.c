@@ -17,9 +17,11 @@
 // clock measurements
 #include <time.h>
 
-#include <math.h>
-
+// cilk for parallelism
 #include <cilk/cilk.h>
+
+// math utilities
+#include <math.h>
 
 // valid pin characters
 const char* chars="0123456789";
@@ -58,36 +60,47 @@ void genpass(long passnum, char* passbuff) {
     }
 }
 
+// run parallel process for checking pins
+void start_parallel_check(char* given_key){
+  char passmatch[9]; // buffer for the matched password
+
+  // variables for the timer
+  struct timespec start_time;
+  struct timespec end_time;
+  long msec;
+
+  clock_gettime(CLOCK_MONOTONIC,&start_time);
+
+  long max_comb = pow(10,8);
+  int notfound=1;
+  int answer;
+
+  cilk_for(int i=0; i<max_comb; i++){
+    genpass(i,passmatch);
+    notfound=test(given_key, passmatch);
+    if(!notfound){
+      // set can_proceed and answer
+      answer = i;
+      clock_gettime(CLOCK_MONOTONIC,&end_time);
+      // convert the time to elapsed milliseconds
+      msec = (end_time.tv_sec - start_time.tv_sec)*1000 + (end_time.tv_nsec - start_time.tv_nsec)/1000000;
+      printf("found: %8d in %dms\n",i,msec);
+      // exit the program as soon as the answer is found
+      exit(0);
+    }
+  }
+
+  // handling non-determinism caused by parallelism
+  printf("Answer did not come out. Running the process again ...\n");
+  start_parallel_check(given_key);
+}
+
 int main(int argc, char** argv) {
     if(argc != 2) {
         printf("Usage: %s <password hash>\n",argv[0]);
         return 1;
     }
+    start_parallel_check(argv[1]);
 
-    char passmatch[9]; // buffer for the matched password
-    long currpass=0; // current password under consideration
-
-    // variables for the timer
-    struct timespec start_time;
-    struct timespec end_time;
-    long msec;
-
-    clock_gettime(CLOCK_MONOTONIC,&start_time);
-
-    // While a match has not been found, search
-    int notfound=1;
-    long max_comb = pow(10,8);
-
-    cilk_for (int i = 0; i < max_comb; ++i){
-      genpass(i,passmatch); // generate the password
-      notfound=test(argv[1], passmatch); // check for a match
-      if(!notfound) printf("found: %d\n",i);
-    }
-    clock_gettime(CLOCK_MONOTONIC,&end_time);
-
-    // convert the time to elapsed milliseconds
-    msec = (end_time.tv_sec - start_time.tv_sec)*1000 + (end_time.tv_nsec - start_time.tv_nsec)/1000000;
-
-    printf("found: %s in %dms\n",passmatch,msec);
     return EXIT_SUCCESS;
 }
