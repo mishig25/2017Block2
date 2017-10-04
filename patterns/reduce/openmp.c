@@ -8,7 +8,10 @@
 #include <time.h>
 #include <omp.h>
 
-/* struct to hold arrays attributes */
+/*
+  struct to hold arrays attributes
+  it is an Structure of Arrays
+*/
 struct SoA{
   float* x;
   float* y;
@@ -27,7 +30,7 @@ int place_uniformly(int sx, int ex, int sy, int ey, int sz, int ez, struct SoA* 
   soa->y = (float *) malloc(number_of_phaseballs * sizeof(float));
   soa->z = (float *) malloc(number_of_phaseballs * sizeof(float));
   soa->mass = (float *) malloc(number_of_phaseballs * sizeof(float));
-  
+
   for(int i=sx; i<=ex; i++) {
         for(int j=sy; j<=ey; j++) {
             for(int k=sz; k<=ez; k++) {
@@ -42,13 +45,14 @@ int place_uniformly(int sx, int ex, int sy, int ey, int sz, int ez, struct SoA* 
   return number_of_phaseballs;
 }
 
-void post_process(struct SoA* soa, float* cx, float* cy, int length) {
+void post_process(struct SoA* soa, float* cx, float* cy, int* length) {
     double mass_sum=0.0;
     double wx=0.0;
     double wy=0.0;
 
+    // uasge of REDUCTION pattern
     #pragma omp parallel for reduction(+:mass_sum,wx,wy)
-    for(int i=0; i<length; i++){
+    for(int i=0; i<*length; i++){
       // struct phaseball* o = v->objects[i];
       mass_sum += soa->mass[i];
       wx += soa->x[i] * soa->mass[i];
@@ -71,7 +75,7 @@ int main(int argc, char** argv) {
     struct timespec start_time;
     struct timespec end_time;
     clock_gettime(CLOCK_MONOTONIC,&start_time);
-    post_process(&soa, &cx, &cy, length_of_arr);
+    post_process(&soa, &cx, &cy, &length_of_arr);
     clock_gettime(CLOCK_MONOTONIC,&end_time);
     long msec = (end_time.tv_sec - start_time.tv_sec)*1000 + (end_time.tv_nsec - start_time.tv_nsec)/1000000;
 
