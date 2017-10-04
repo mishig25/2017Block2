@@ -26,11 +26,3 @@ To run the OpenMP version:
 
 To run the cilk version:
 ./centroid_cilk
-
-To run the tbb version:
-./centroid_tbb
-
-To run the MPI version:
-srun -N1 -n32 ./centroid_mpi
-
-
