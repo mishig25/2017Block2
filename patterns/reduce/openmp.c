@@ -8,38 +8,13 @@
 #include <time.h>
 #include <omp.h>
 
-/* struct to hold objects attributes */
-struct phaseball {
-    float x;
-    float y;
-    float z;
-    float mass;
-};
-
-struct volume {
-    size_t size;
-    size_t last;
-    struct phaseball** objects;
-};
-
-// structure of arrays
+/* struct to hold arrays attributes */
 struct SoA{
   float* x;
   float* y;
   float* z;
   float* mass;
 };
-
-// Add phaseball to a volume
-void volume_append(struct volume* v, struct phaseball* o, int ctr) {
-    if( v->last == v->size ) {
-        (v->size) += 100;
-        v->objects = realloc(v->objects, sizeof(struct phaseball*)*(v->size)+100);
-    }
-    (v->objects)[(v->last)] = o;
-    (v->last) += 1;
-    return;
-}
 
 // Place phaseballs uniformly in a box, with mass equal to the manhattan distance
 int place_uniformly(int sx, int ex, int sy, int ey, int sz, int ez, struct SoA* soa){
@@ -83,13 +58,7 @@ void post_process(struct SoA* soa, float* cx, float* cy, int length) {
 }
 
 int main(int argc, char** argv) {
-    // make a volume to store objects in
-    struct volume v;
-    v.size=100;
-    v.last=0;
-    v.objects = malloc(sizeof(struct phaseball*)*100);
-
-    // struct of arrays
+    // struct of arrays to store attributes
     struct SoA soa;
     // Set the initial configuration
     // place_uniformly(-1000,1000,-100,100,-100,100,&v,&soa);
