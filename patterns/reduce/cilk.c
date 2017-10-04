@@ -6,7 +6,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include <omp.h>
+#include <cilk/cilk.h>
+#include <cilk/reducer_opadd.h>
 
 /*
   struct to hold arrays attributes
@@ -46,20 +47,19 @@ int place_uniformly(int sx, int ex, int sy, int ey, int sz, int ez, struct SoA* 
 }
 
 void post_process(struct SoA* soa, float* cx, float* cy, int* length) {
-    double mass_sum=0.0;
-    double wx=0.0;
-    double wy=0.0;
-
-    // uasge of REDUCTION pattern
-    #pragma omp parallel for reduction(+:mass_sum,wx,wy)
-    for(int i=0; i<*length; i++){
-      mass_sum += soa->mass[i];
-      wx += soa->x[i] * soa->mass[i];
-      wy += soa->y[i] * soa->mass[i];
+    // initialiing Cilk Reduce vars
+    CILK_C_REDUCER_OPADD(mass_sum, double, 0.0);
+    CILK_C_REDUCER_OPADD(wx, double, 0.0);
+    CILK_C_REDUCER_OPADD(wy, double, 0.0);
+    // cilk_for parallelism
+    cilk_for(int i=0; i<*length; i++){
+      REDUCER_VIEW(mass_sum) += soa->mass[i];
+      REDUCER_VIEW(wx) += soa->x[i] * soa->mass[i];
+      REDUCER_VIEW(wy) += soa->y[i] * soa->mass[i];
     }
-
-    *cx = wx/mass_sum;
-    *cy = wy/mass_sum;
+    // get values back from Cilk Reduce vars
+    *cx = (wx.value)/(mass_sum.value);
+    *cy = (wy.value)/(mass_sum.value);
 
     return;
 }
