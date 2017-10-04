@@ -8,12 +8,6 @@
 #include <time.h>
 #include <omp.h>
 
-#define N 80842401
-float x[N];
-float y[N];
-float z[N];
-float mass[N];
-
 /* struct to hold objects attributes */
 struct phaseball {
     float x;
@@ -44,12 +38,6 @@ void volume_append(struct volume* v, struct phaseball* o, int ctr) {
     }
     (v->objects)[(v->last)] = o;
     (v->last) += 1;
-
-    x[ctr] = o->x;
-    y[ctr] = o->y;
-    z[ctr] = o->z;
-    mass[ctr] = o->mass;
-
     return;
 }
 
@@ -73,7 +61,7 @@ void place_uniformly(int sx, int ex, int sy, int ey, int sz, int ez, struct volu
                 soa->x[counter] = i;
                 soa->y[counter] = j;
                 soa->z[counter] = k;
-                soa->mass[counter] = fabs(n->x)+fabs(n->y)+fabs(n->z);
+                soa->mass[counter] = fabs(i)+fabs(j)+fabs(k);
                 volume_append(v,n,counter);
                 counter ++;
             }
@@ -102,8 +90,6 @@ void post_process(struct volume* v, float* cx, float* cy, struct SoA* soa) {
 }
 
 int main(int argc, char** argv) {
-    int *list;
-    list  = (int *) malloc(N * sizeof(int));
     // make a volume to store objects in
     struct volume v;
     v.size=100;
