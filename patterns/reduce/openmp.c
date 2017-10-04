@@ -13,7 +13,6 @@ float x[N];
 float y[N];
 float z[N];
 float mass[N];
-// int list[N];
 
 /* struct to hold objects attributes */
 struct phaseball {
@@ -31,10 +30,10 @@ struct volume {
 
 // structure of arrays
 struct SoA{
-  // float* x[80842401];
-  // float* y[80842401];
-  // float* z[80842401];
-  // float* mass[80842401];
+  float* x;
+  float* y;
+  float* z;
+  float* mass;
 };
 
 // Add phaseball to a volume
@@ -55,8 +54,13 @@ void volume_append(struct volume* v, struct phaseball* o, int ctr) {
 }
 
 // Place phaseballs uniformly in a box, with mass equal to the manhattan distance
-void place_uniformly(int sx, int ex, int sy, int ey, int sz, int ez, struct volume* v) {
+void place_uniformly(int sx, int ex, int sy, int ey, int sz, int ez, struct volume* v, struct SoA* soa) {
   int counter = 0;
+  int number_of_phaseballs = (ex-sx+1)*(ey-sy+1)*(ez-sy+1);
+  soa->x = (float *) malloc(number_of_phaseballs * sizeof(float));
+  soa->y = (float *) malloc(number_of_phaseballs * sizeof(float));
+  soa->z = (float *) malloc(number_of_phaseballs * sizeof(float));
+  soa->mass = (float *) malloc(number_of_phaseballs * sizeof(float));
     for(int i=sx; i<=ex; i++) {
         for(int j=sy; j<=ey; j++) {
             for(int k=sz; k<=ez; k++) {
@@ -66,16 +70,19 @@ void place_uniformly(int sx, int ex, int sy, int ey, int sz, int ez, struct volu
                 n->z = k;
                 n->mass = 1;
                 n->mass = fabs(n->x)+fabs(n->y)+fabs(n->z);
+                soa->x[counter] = i;
+                soa->y[counter] = j;
+                soa->z[counter] = k;
+                soa->mass[counter] = fabs(n->x)+fabs(n->y)+fabs(n->z);
                 volume_append(v,n,counter);
                 counter ++;
             }
         }
     }
-    printf("Count: %d\n",counter);
 }
 
 // Projects 3D volume to 11x11 2D map and report centroid
-void post_process(struct volume* v, float* cx, float* cy) {
+void post_process(struct volume* v, float* cx, float* cy, struct SoA* soa) {
     double mass_sum=0.0;
     double wx=0.0;
     double wy=0.0;
@@ -83,9 +90,9 @@ void post_process(struct volume* v, float* cx, float* cy) {
     #pragma omp parallel for reduction(+:mass_sum,wx,wy)
     for(int i=0; i<v->last; i++){
       // struct phaseball* o = v->objects[i];
-      mass_sum += mass[i];
-      wx += x[i] * mass[i];
-      wy += y[i] * mass[i];
+      mass_sum += soa->mass[i];
+      wx += soa->x[i] * soa->mass[i];
+      wy += soa->y[i] * soa->mass[i];
     }
 
     *cx = wx/mass_sum;
@@ -107,14 +114,14 @@ int main(int argc, char** argv) {
     struct SoA soa;
 
     // Set the initial configuration
-    place_uniformly(-1000,1000,-100,100,-100,100,&v);
+    place_uniformly(-1000,1000,-100,100,-100,100,&v,&soa);
 
     // Generate output
     float cx,cy;
     struct timespec start_time;
     struct timespec end_time;
     clock_gettime(CLOCK_MONOTONIC,&start_time);
-    post_process(&v, &cx, &cy);
+    post_process(&v, &cx, &cy, &soa);
     clock_gettime(CLOCK_MONOTONIC,&end_time);
     long msec = (end_time.tv_sec - start_time.tv_sec)*1000 + (end_time.tv_nsec - start_time.tv_nsec)/1000000;
 
@@ -122,7 +129,5 @@ int main(int argc, char** argv) {
     printf("Centroid at: %f,%f\n",cx,cy);
     printf("found in %dms\n",msec);
 
-    int n = sizeof(list)/sizeof(int);
-    printf("Length in %d\n",v.last);
     return EXIT_SUCCESS;
 }
