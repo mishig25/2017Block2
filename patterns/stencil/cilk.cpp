@@ -110,9 +110,8 @@ void apply_stencil(const int radius, const double stddev, const int rows, const 
     double* intensity = (double*) malloc(sizeof(double)*rows*cols);
     // For each pixel in the image...
     // parallelize two nested loops
-    // #pragma omp parallel for collapse(2)
-    for(int i = 0; i < rows; ++i) {
-        for(int j = 0; j < cols; ++j) {
+    cilk_for(int i = 0; i < rows; ++i) {
+        cilk_for(int j = 0; j < cols; ++j) {
             // out_offset current pixel index
             const int out_offset = i + (j*rows);
             double red = 0, green = 0, blue = 0;
@@ -142,12 +141,10 @@ void apply_stencil(const int radius, const double stddev, const int rows, const 
         }
     }
     // prewiit loop
-    // #pragma omp parallel for collapse(2)
-    for(int i = 0; i < rows; ++i){
-      for(int j = 0; j < cols; ++j){
+    cilk_for(int i = 0; i < rows; ++i){
+      cilk_for(int j = 0; j < cols; ++j){
         int out_offset = i + (j*rows);
         double prewitt_x = 0, prewitt_y = 0;
-        // #pragma omp parallel for reduction(+:prewitt_x,prewitt_y) collapse(2)
         for (int x = i-1; x<=i+1; x++){
           for (int y = j-1; y<=j+1; y++){
                 if(x >= 0 && x < rows && y >= 0 && y < cols){
