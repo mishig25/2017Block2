@@ -137,7 +137,7 @@ void apply_stencil(const int radius, const double stddev, const int rows, const 
             out[out_offset].green = green;
             out[out_offset].blue = blue;
             // for prewitt
-            intensity[out_offset] = (out[out_offset].red+out[out_offset].green+out[out_offset].blue)/3.0;
+            intensity[out_offset] = (out[out_offset].red + out[out_offset].green + out[out_offset].blue)/3.0;
         }
     }
     // prewiit loop
