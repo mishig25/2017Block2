@@ -106,7 +106,9 @@ void apply_stencil(const int radius, const double stddev, const int rows, const 
         for(int j = 0; j < cols; ++j) {
             // out_offset current pixel index
             const int out_offset = i + (j*rows);
+            double red = 0, green = 0, blue = 0;
             // ...apply the template centered on the pixel...
+            #pragma omp parallel for reduction(+:red,green,blue) collapse(2)
             for(int x = i - radius; x <= i + radius; ++x) {
                 for(int y = j - radius; y <= j + radius; ++y) {
                     // ...and skip parts of the template outside of the image
@@ -117,12 +119,15 @@ void apply_stencil(const int radius, const double stddev, const int rows, const 
                         // Acculate intensities in the output pixel
                         const int in_offset = x + (y*rows);
                         const int k_offset = kxx + (kyy*dim);
-                        out[out_offset].red   += kernel[k_offset] * in[in_offset].red;
-                        out[out_offset].green += kernel[k_offset] * in[in_offset].green;
-                        out[out_offset].blue  += kernel[k_offset] * in[in_offset].blue;
+                        red   += kernel[k_offset] * in[in_offset].red;
+                        green += kernel[k_offset] * in[in_offset].green;
+                        blue  += kernel[k_offset] * in[in_offset].blue;
                     }
                 }
             }
+            out[out_offset].red = red;
+            out[out_offset].green = green;
+            out[out_offset].blue = blue;
         }
     }
 }
