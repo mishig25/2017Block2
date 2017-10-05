@@ -8,7 +8,7 @@
 
 using namespace cv;
 
-// Represents a pixel as a triple of intensities
+// Represents a pixel as a triple of intensity
 struct pixel {
     double red;
     double green;
@@ -19,7 +19,7 @@ struct pixel {
 
 /*
  * The Prewitt kernels can be applied after a blur to help highlight edges
- * The input image must be gray scale/intensities:
+ * The input image must be gray scale/intensity:
  *     double intensity = (in[in_offset].red + in[in_offset].green + in[in_offset].blue)/3.0;
  * Each kernel must be applied to the blured images separately and then composed:
  *     blurred[i] with prewittX -> Xedges[i]
@@ -96,9 +96,17 @@ void gaussian_kernel(const int rows, const int cols, const double stddev, double
  * Applies a gaussian blur stencil to an image
  */
 void apply_stencil(const int radius, const double stddev, const int rows, const int cols, pixel * const in, pixel * const out) {
+    // set up gaussian kernel
     const int dim = radius*2+1;
     double kernel[dim*dim];
     gaussian_kernel(dim, dim, stddev, kernel);
+    // set up prewitt kernel
+    int pre_n = 3;
+    double prewittX[pre_n*pre_n];
+    double prewittY[pre_n*pre_n];
+    prewittX_kernel(pre_n,pre_n,prewittX);
+    prewittY_kernel(pre_n,pre_n,prewittY);
+    double* intensity = (double*) malloc(sizeof(double)*rows*cols);
     // For each pixel in the image...
     // parallelize two nested loops
     #pragma omp parallel for collapse(2)
@@ -116,7 +124,7 @@ void apply_stencil(const int radius, const double stddev, const int rows, const 
                         // calculate kx, ky
                         int kxx = x - (i - radius);
                         int kyy = y - (j - radius);
-                        // Acculate intensities in the output pixel
+                        // Acculate intensity in the output pixel
                         const int in_offset = x + (y*rows);
                         const int k_offset = kxx + (kyy*dim);
                         red   += kernel[k_offset] * in[in_offset].red;
@@ -128,7 +136,32 @@ void apply_stencil(const int radius, const double stddev, const int rows, const 
             out[out_offset].red = red;
             out[out_offset].green = green;
             out[out_offset].blue = blue;
+            // for prewitt
+            intensity[out_offset] = (out[out_offset].red+out[out_offset].green+out[out_offset].blue)/3.0;
         }
+    }
+    // prewiit loop
+    #pragma omp parallel for collapse(2)
+    for(int i = 0; i < rows; ++i){
+      for(int j = 0; j < cols; ++j){
+        int out_offset = i + (j*rows);
+        double prewitt_x = 0, prewitt_y = 0;
+        #pragma omp parallel for reduction(+:prewitt_x,prewitt_y) collapse(2)
+        for (int x = i-1; x<=i+1; x++){
+          for (int y = j-1; y<=j+1; y++){
+                if(x >= 0 && x < rows && y >= 0 && y < cols){
+                  // calculate kx, ky
+                  int kxx = x - (i - 1);
+                  int kyy = y - (j - 1);
+                  const int in_offset = x + (y*rows);
+                  const int k_offset= kxx + (kyy*3);
+                  prewitt_x+=prewittX[k_offset]*intensity[in_offset];
+                  prewitt_y+=prewittY[k_offset]*intensity[in_offset];
+                }
+            }
+        }
+        out[out_offset].red = out[out_offset].green = out[out_offset].blue = sqrt(prewitt_x * prewitt_x + prewitt_y * prewitt_y);
+      }
     }
 }
 
