@@ -7,13 +7,22 @@
 #include <math.h>
 #include <time.h>
 #include <cilk/cilk.h>
+#include <map>
+
+std::map<int, int> q_vals;
 
 long q(long n) {
-    if(n<3) return 1;
-    int x = cilk_spawn q(n - q(n-1));
-    int y = q(n-q(n-2));
-    cilk_sync;
-    return x + y;
+    if ( q_vals.find(n) == q_vals.end() ) {
+      int val = 1;
+      if(!(n<3)){
+        int x = cilk_spawn q(n - q(n-1));
+        int y = q(n-q(n-2));
+        cilk_sync;
+        val = x + y;
+      }
+      q_vals[n] = val;
+    }
+    return q_vals.at(n);
 }
 
 int main(int argc, char** argv) {

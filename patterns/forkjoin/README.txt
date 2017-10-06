@@ -26,8 +26,3 @@ To run the OpenMP version:
 
 To run the cilk version:
 ./cilk 40
-
-To run the tbb version:
-./tbb 40
-
-
