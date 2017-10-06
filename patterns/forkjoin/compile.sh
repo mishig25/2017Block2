@@ -1,10 +1,10 @@
 #! /bin/bash
 
 # Compile the serial version
-gcc -g -o serial serial.c
+g++ -g -o serial serial.cpp
 
-# # Compile the OpenMP version
-# gcc -o openmp -fopenmp openmp.c
-#
+# Compile the OpenMP version
+g++ -o openmp -fopenmp openmp.cpp
+
 # Compile the cilkplus version
-g++ -o cilk -fcilkplus cilk.c
+g++ -o cilk -fcilkplus cilk.cpp
