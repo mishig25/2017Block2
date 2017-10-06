@@ -11,7 +11,7 @@
 
 /* uses hashmap to improve runtime */
 long q(long n, std::map<int, int> *q_vals) {
-    if ((*q_vals).find(n) == (*q_vals).end()) {
+    if (q_vals->find(n) == q_vals->end()) {
       int val = 1;
       if(!(n<3)){
         // fork
@@ -23,7 +23,7 @@ long q(long n, std::map<int, int> *q_vals) {
       }
       (*q_vals)[n] = val;
     }
-    return (*q_vals).at(n);
+    return q_vals->at(n);
 }
 
 int main(int argc, char** argv) {
