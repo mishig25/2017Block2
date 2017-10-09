@@ -4,9 +4,7 @@ Course repository of Mishig Davaadorj
 ## Getting Started
 
 #### From Wikipedia:
-```
 Parallel computing is a type of computation in which many calculations or the execution of processes are carried out simultaneously. Large problems can often be divided into smaller ones, which can then be solved at the same time.
-```
 #### Textbook:
 * [Structured Parallel Programming: Patterns for Efficient Computation](http://parallelbook.com/)
 
@@ -15,7 +13,7 @@ Parallel computing is a type of computation in which many calculations or the ex
 * [OpenMP](http://www.openmp.org/) -  application programming interface that supports multi-platform shared memory multiprocessing programming in C, C++
 * [CilkPlus](https://www.cilkplus.org/) - extension to the C and C++ languages to support data and task parallelism
 
-## Contents of the repository
+## Contents of the Repository
 #### Final Project:
 * Parallel Neural Networks
 #### Parallel Patterns:
