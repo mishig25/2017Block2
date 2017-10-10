@@ -15,7 +15,7 @@ Parallel computing is a type of computation in which many calculations or the ex
 
 ## Contents of the Repository
 #### Final Project:
-* Parallel Neural Networks
+* [Parallel Neural Networks](https://github.com/mishig25/2017Block2/tree/master/project)
 #### Parallel Patterns:
 * [Map](https://github.com/mishig25/2017Block2/tree/master/patterns/map)
 * [Reduce](https://github.com/mishig25/2017Block2/tree/master/patterns/reduce)
