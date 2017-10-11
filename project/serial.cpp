@@ -187,6 +187,9 @@ public:
 
 class NeuralNetwork{
 private:
+  int n_input;
+  int n_output;
+  int n_hidden;
   Mat *syn0;
   Mat *syn1;
   Dataset *data_train;
@@ -213,13 +216,16 @@ private:
     syn->add(updates);
   }
 public:
-  NeuralNetwork(int n_input, int n_hidden, int n_output){
+  NeuralNetwork(int _n_input, int _n_hidden, int _n_output){
+    n_input = _n_input;
+    n_hidden = _n_hidden;
+    n_output = _n_output;
     syn0 = new Mat(n_input,n_hidden,true);
     syn1 = new Mat(n_hidden,n_output,true);
   }
   void train(string path_x, string path_y, int n_epoch, int n_sample){
     data_train = new Dataset();
-    data_train->load_x("dataset/data_train_x.csv", n_sample, this->syn0->n_rows);
+    data_train->load_x("dataset/data_train_x.csv", n_sample, n_input);
     data_train->load_y("dataset/data_train_y.csv", n_sample, 1);
     cout << "Succesfully loaded train dataset. \nTraining ... \n";
     // run for n_epochs
@@ -247,8 +253,8 @@ public:
   }
   void test(string path_x, string path_y, int n_sample){
     data_test = new Dataset();
-    data_test->load_x(path_x, n_sample, 20);
-    data_test->load_y(path_y, n_sample, 1);
+    data_test->load_x(path_x, n_sample, n_input);
+    data_test->load_y(path_y, n_sample, n_output);
     cout << "Succesfully loaded train dataset. \nTraining ... \n";
     int error_counter = 0;
     for(int i=0; i<data_test->x->size(); ++i){
