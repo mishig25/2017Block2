@@ -1,4 +1,4 @@
 /practice/*
 .bash
 /theory/architecture/Traffic_Violations.csv
-**/.DS_Store
+.DS_Store
