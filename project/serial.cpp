@@ -271,21 +271,30 @@ public:
 };
 
 int main(int argc, char** argv){
-
+  // parameters for Neural Network
   int n_train = 2534;
   int n_test = 634;
   int n_input = 20;
   int n_output = 1;
-  int n_hidden_neurons = 4;
+  int n_hidden_neurons = 50;
 
-
+  // dataset paths
   string train_x = "dataset/data_train_x.csv";
   string train_y = "dataset/data_train_y.csv";
   string test_x = "dataset/data_test_x.csv";
   string test_y = "dataset/data_test_y.csv";
 
+  // variables for the timer
+  struct timespec start_time;
+  struct timespec end_time;
+  long msec;
+
   NeuralNetwork *NN = new NeuralNetwork(n_input,n_hidden_neurons,n_output);
+  clock_gettime(CLOCK_MONOTONIC,&start_time);
   NN->train(train_x,train_y,4,n_train);
+  clock_gettime(CLOCK_MONOTONIC,&end_time);
   NN->test(test_x,test_y,n_test);
 
+  msec = (end_time.tv_sec - start_time.tv_sec)*1000 + (end_time.tv_nsec - start_time.tv_nsec)/1000000;
+  cout << "Took: " << msec << " msec to train\n";
 }
