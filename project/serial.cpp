@@ -14,6 +14,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdexcept>
 
 using namespace std;
 
@@ -31,8 +32,7 @@ public:
   Mat* dot(Mat *other_mat){
     if(this->n_cols != other_mat->n_rows){
       // riase exception
-      printf("Matrices dimensions do NOT match for dot product\n");
-      exit(1);
+      throw invalid_argument("\nMatrices dimensions do NOT match for dot product\n");
     }
     Mat *new_mat = new Mat(this->n_rows, other_mat->n_cols);
     int counter = 0;
@@ -57,8 +57,7 @@ public:
   double* get_col(int n){
     if(n >= this->n_cols){
       // raise exception
-      cout << "Col " << n << "does not exis in the mat\n";
-      exit(1);
+      throw invalid_argument("\nSelected column does not exist in the matrix\n");
     }
     // return that column
     double *col = new double[this->n_rows];
@@ -70,8 +69,7 @@ public:
   double* get_row(int n){
     if(n >= this->n_rows){
       // raise exception
-      cout << "Row " << n << "does not exis in the mat\n";
-      exit(1);
+      throw invalid_argument("\nSelected row does not exist in the matrix\n");
     }
     // return that column
     double *row = new double[this->n_cols];
@@ -91,8 +89,7 @@ public:
   }
   Mat* operator-(Mat *other_mat){
     if(this->n_cols != other_mat->n_cols || this->n_rows != other_mat->n_rows){
-      cout << "Matrices dimensions do NOT match for subtracting" << endl;
-      exit(1);
+      throw invalid_argument("\nMatrices dimensions do NOT match for - operation\n");
     }
     Mat *new_mat = new Mat(this->n_rows,this->n_cols);
     int length = new_mat->get_length();
@@ -103,8 +100,7 @@ public:
   }
   void add(Mat *other_mat){
     if(this->n_cols != other_mat->n_cols || this->n_rows != other_mat->n_rows){
-      cout << "Matrices dimensions do NOT match for adding" << endl;
-      exit(1);
+      throw invalid_argument("\nMatrices dimensions do NOT match for += operation\n");
     }
     int length = this->get_length();
     for(int i=0; i<length; ++i){
@@ -113,8 +109,7 @@ public:
   }
   Mat* operator*(Mat *other_mat){
     if(this->n_cols != other_mat->n_cols || this->n_rows != other_mat->n_rows){
-      cout << "Matrices dimensions do NOT match for multiplying" << endl;
-      exit(1);
+      throw invalid_argument("\nMatrices dimensions do NOT match for * operation\n");
     }
     Mat *new_mat = new Mat(this->n_rows,this->n_cols);
     int length = new_mat->get_length();
@@ -292,4 +287,5 @@ int main(int argc, char** argv){
   NeuralNetwork *NN = new NeuralNetwork(n_input,n_hidden_neurons,n_output);
   NN->train(train_x,train_y,4,n_train);
   NN->test(test_x,test_y,n_test);
+
 }
