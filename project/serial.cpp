@@ -216,7 +216,7 @@ public:
   }
   void train(string path_x, string path_y, int n_epoch, int n_sample){
     data_train = new Dataset();
-    data_train->load_x("dataset/data_train_x.csv", n_sample, 20); // TODO change it syn0->n_cols
+    data_train->load_x("dataset/data_train_x.csv", n_sample, this->syn0->n_rows);
     data_train->load_y("dataset/data_train_y.csv", n_sample, 1);
     cout << "Succesfully loaded train dataset. \nTraining ... \n";
     // run for n_epochs
@@ -270,9 +270,17 @@ int main(int argc, char** argv){
 
   int n_train = 2534;
   int n_test = 634;
-  int n_features = 20;
+  int n_input = 20;
+  int n_output = 1;
+  int n_hidden_neurons = 4;
 
-  NeuralNetwork *NN = new NeuralNetwork(20,4,1);
-  NN->train("dataset/data_train_x.csv","dataset/data_train_y.csv",4,n_train);
-  NN->test("dataset/data_test_x.csv","dataset/data_test_y.csv",n_test);
+
+  string train_x = "dataset/data_train_x.csv";
+  string train_y = "dataset/data_train_y.csv";
+  string test_x = "dataset/data_test_x.csv";
+  string test_y = "dataset/data_test_y.csv";
+
+  NeuralNetwork *NN = new NeuralNetwork(n_input,n_hidden_neurons,n_output);
+  NN->train(train_x,train_y,4,n_train);
+  NN->test(test_x,test_y,n_test);
 }
