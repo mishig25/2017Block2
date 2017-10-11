@@ -7,8 +7,8 @@
  */
 
 #include <iostream>
-#import <string>
-#import <fstream>
+#include <string>
+#include <fstream>
 #include <sstream>
 #include <random>
 #include <time.h>
