@@ -101,6 +101,16 @@ public:
     }
     return new_mat;
   }
+  void add(Mat *other_mat){
+    if(this->n_cols != other_mat->n_cols || this->n_rows != other_mat->n_rows){
+      cout << "Matrices dimensions do NOT match for adding" << endl;
+      exit(1);
+    }
+    int length = this->get_length();
+    for(int i=0; i<length; ++i){
+      this->data[i] = this->data[i] + other_mat->data[i];
+    }
+  }
   Mat* operator*(Mat *other_mat){
     if(this->n_cols != other_mat->n_cols || this->n_rows != other_mat->n_rows){
       cout << "Matrices dimensions do NOT match for multiplying" << endl;
@@ -200,14 +210,7 @@ private:
     Mat *layer_T = layer->transpose();
     Mat *updates = layer_T->dot(delta);
     int length = updates->get_length();
-    if(syn->n_cols != updates->n_cols || syn->n_rows != updates->n_rows){
-      // riase exception
-      printf("Matrices dimensions do NOT match for update weights\n");
-      exit(1);
-    }
-    for(int i=0; i<length; ++i){
-      syn->data[i] = syn->data[i] + updates->data[i];
-    }
+    syn->add(updates);
   }
 public:
   NeuralNetwork(int n_input, int n_hidden, int n_output){
