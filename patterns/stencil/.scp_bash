@@ -1,7 +1,0 @@
-function u(){
-  scp /Users/mishigdavaadorj/Desktop/School/2017-2018/Parallel\ Programming/repository/patterns/stencil/* mishig@mcscn.cs.coloradocollege.edu:~/stencil
-}
-
-function d(){
-  scp mishig@mcscn.cs.coloradocollege.edu:~/stencil/out.jpg /Users/mishigdavaadorj/Desktop/School/2017-2018/Parallel\ Programming/repository/patterns/stencil/
-}

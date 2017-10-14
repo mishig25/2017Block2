@@ -1,9 +1,9 @@
 /**
  * Simple Neural Network (Multi-Layer Perceptron)
- * class written completely in vanilla C++
+ * program written completely in vanilla C++
  *
  * @author  Mishig Davaadorj
- * @version 1.0, 10/11/17
+ * @version 1.0, 10/15/17
  */
 
 #include <iostream>
@@ -16,11 +16,13 @@
 #include <math.h>
 #include <stdexcept>
 
-#include <cilk/cilk.h>
-#include <cilk/reducer_opadd.h>
+#include <omp.h>
 
 using namespace std;
 
+/**
+ * Timer class for recording time
+ */
 class Timer{
 private:
   struct timespec start_time;
@@ -40,7 +42,23 @@ public:
   }
 };
 
+/**
+ * Matrix class for
+ * creation of matrices and operations
+ * on them
+ */
 class Mat{
+private:
+  double random_double(){
+    return ((float)rand()/RAND_MAX)*2-1;
+  }
+  void random_mat(){
+    // changing random seed
+    srand( (unsigned)time( NULL ) );
+    int length = this->n_rows * this->n_cols;
+    // generate random doubles
+    for(int i=0; i<length; ++i) this->data[i] = random_double();
+  }
 public:
   int n_rows;
   int n_cols;
@@ -57,49 +75,19 @@ public:
       throw invalid_argument("\nMatrices dimensions do NOT match for dot product\n");
     }
     Mat *new_mat = new Mat(this->n_rows, other_mat->n_cols);
-    int counter = 0;
-    // outer loop
-    cilk_for(int i=0; i<this->n_rows; ++i){
-      // dot product here
-      double *row = this->get_row(i);
-      for (int j=0; j<other_mat->n_cols; j++){
-        double *col = other_mat->get_col(j);
-        // add entry by entry
-        // double sum = 0;
-        cilk::reducer< cilk::op_add<double> > sum(0);
-        for(int j=0; j<this->n_cols; ++j){
-          *sum += (row[j] * col[j]);
+    int i,j,k;
+    double* a = this->data;
+    double* b = other_mat->data;
+    double* c = new_mat->data;
+    #pragma omp parallel for
+    for(i=0; i<this->n_rows; ++i){
+      for(j=0; j<other_mat->n_cols; ++j){
+        for(k=0; k<other_mat->n_rows; ++k){
+          c[i*(new_mat->n_cols)+j] += a[i*(this->n_cols)+k] * b[k*(other_mat->n_cols)+j];
         }
-        new_mat->data[counter] = sum.get_value();
-        ++counter;
-        // cout << sum << " " << counter << endl;
       }
     }
     return new_mat;
-  }
-  double* get_col(int n){
-    if(n >= this->n_cols){
-      // raise exception
-      throw invalid_argument("\nSelected column does not exist in the matrix\n");
-    }
-    // return that column
-    double *col = new double[this->n_rows];
-    for(int i=0; i<this->n_rows; ++i){
-      col[i] = this->data[n + (i*this->n_cols)];
-    }
-    return col;
-  }
-  double* get_row(int n){
-    if(n >= this->n_rows){
-      // raise exception
-      throw invalid_argument("\nSelected row does not exist in the matrix\n");
-    }
-    // return that column
-    double *row = new double[this->n_cols];
-    cilk_for(int i=0; i<this->n_cols; ++i){
-      row[i] = this->data[n*this->n_cols + i];
-    }
-    return row;
   }
   int get_length(){
     return this->n_rows * this->n_cols;
@@ -116,7 +104,8 @@ public:
     }
     Mat *new_mat = new Mat(this->n_rows,this->n_cols);
     int length = new_mat->get_length();
-    cilk_for(int i=0; i<length; ++i){
+    #pragma omp parallel for
+    for(int i=0; i<length; ++i){
       new_mat->data[i] = this->data[i] - other_mat->data[i];
     }
     return new_mat;
@@ -126,7 +115,8 @@ public:
       throw invalid_argument("\nMatrices dimensions do NOT match for += operation\n");
     }
     int length = this->get_length();
-    cilk_for(int i=0; i<length; ++i){
+    #pragma omp parallel for
+    for(int i=0; i<length; ++i){
       this->data[i] = this->data[i] + other_mat->data[i];
     }
   }
@@ -136,7 +126,8 @@ public:
     }
     Mat *new_mat = new Mat(this->n_rows,this->n_cols);
     int length = new_mat->get_length();
-    cilk_for(int i=0; i<length; ++i){
+    #pragma omp parallel for
+    for(int i=0; i<length; ++i){
       new_mat->data[i] = this->data[i] * other_mat->data[i];
     }
     return new_mat;
@@ -144,28 +135,20 @@ public:
   Mat* transpose(){
     Mat *new_mat = new Mat(this->n_cols,this->n_rows);
     int length = new_mat->get_length();
-    cilk_for(int i=0; i<this->n_rows; ++i){
+    #pragma omp parallel for collapse(2)
+    for(int i=0; i<this->n_rows; ++i){
       for(int j=0; j<this->n_cols; ++j){
-        int old_ind = i*this->n_cols + j;
-        int new_ind = j*this->n_rows + i;
-        new_mat->data[new_ind] = this->data[old_ind];
+        new_mat->data[j*this->n_rows + i] = this->data[i*this->n_cols + j];
       }
     }
     return new_mat;
   }
-private:
-  double random_double(){
-    return ((float)rand()/RAND_MAX)*2-1;
-  }
-  void random_mat(){
-    // changing random seed
-    srand( (unsigned)time( NULL ) );
-    int length = this->n_rows * this->n_cols;
-    // generate random doubles
-    for(int i=0; i<length; ++i) this->data[i] = random_double();
-  }
 };
 
+/**
+ * Dataset class for loading CSV
+ * files into matrices
+ */
 class Dataset{
 public:
   vector<Mat*> *x;
@@ -203,6 +186,10 @@ public:
   }
 };
 
+/**
+ * Neural Network class
+ * that has one hidden layer
+ */
 class NeuralNetwork{
 private:
   int n_input;
@@ -222,6 +209,7 @@ private:
   Mat* sigmoid_derivative(Mat *mat){
     Mat *new_mat = new Mat(mat->n_rows, mat->n_cols);
     int length = mat->get_length();
+    #pragma omp parallel for
     for(int i=0; i<length; ++i){
       new_mat->data[i] = (mat->data[i])*(1-mat->data[i]);
     }
@@ -279,7 +267,7 @@ public:
 
     int error_counter = 0;
     Timer *test_timer = new Timer();
-    cilk_for(int i=0; i<data_test->x->size(); ++i){
+    for(int i=0; i<data_test->x->size(); ++i){
       // Forward pass
       Mat *layer0 = data_test->x->at(i);
       Mat *layer1 = layer0->dot(syn0);
@@ -320,12 +308,22 @@ int main(int argc, char** argv){
   // NN->test(test_x_aug,test_y,n_test);
 
   int counter = 10;
-  int n = 5000;
+  int n = 2000;
   while(counter--){
     Mat *mat1 = new Mat(n,n,true);
-    Mat *mat2 = new Mat(n,n,true);
+    // Mat *mat2 = new Mat(n,n,true);
     Timer *timer = new Timer();
-    Mat *mat3 = mat1->operator-(mat2);
-    timer->stop(" to dor product ");
+    Mat *mat3 = mat1->transpose();
+    timer->stop(" to transpose ");
   }
+
+  // checking dot product preformance
+  // double arr1[] = {1,2,3,4,5,6};
+  // double arr2[] = {1,4,2,5,3,6};
+  // Mat *mat1 = new Mat(2,3);
+  // Mat *mat2 = new Mat(3,2);
+  // mat1->data = arr1;
+  // mat2->data = arr2;
+  // Mat *mat3 = mat1->dot(mat2);
+  // mat3->print();
 }
