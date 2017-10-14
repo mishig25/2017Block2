@@ -21,6 +21,25 @@
 
 using namespace std;
 
+class Timer{
+private:
+  struct timespec start_time;
+  struct timespec end_time;
+  long msec;
+  void start(){
+    clock_gettime(CLOCK_MONOTONIC,&start_time);
+  }
+public:
+  Timer(){
+    this->start();
+  }
+  void stop(string arg){
+    clock_gettime(CLOCK_MONOTONIC,&end_time);
+    msec = (end_time.tv_sec - start_time.tv_sec)*1000 + (end_time.tv_nsec - start_time.tv_nsec)/1000000;
+    cout << "Took: " << msec << " msec" << arg << endl;
+  }
+};
+
 class Mat{
 public:
   int n_rows;
@@ -46,11 +65,12 @@ public:
       for (int j=0; j<other_mat->n_cols; j++){
         double *col = other_mat->get_col(j);
         // add entry by entry
-        double sum = 0;
+        // double sum = 0;
+        cilk::reducer< cilk::op_add<double> > sum(0);
         for(int j=0; j<this->n_cols; ++j){
-          sum += (row[j] * col[j]);
+          *sum += (row[j] * col[j]);
         }
-        new_mat->data[counter] = sum;
+        new_mat->data[counter] = sum.get_value();
         ++counter;
         // cout << sum << " " << counter << endl;
       }
@@ -76,7 +96,7 @@ public:
     }
     // return that column
     double *row = new double[this->n_cols];
-    for(int i=0; i<this->n_cols; ++i){
+    cilk_for(int i=0; i<this->n_cols; ++i){
       row[i] = this->data[n*this->n_cols + i];
     }
     return row;
@@ -142,7 +162,7 @@ private:
     srand( (unsigned)time( NULL ) );
     int length = this->n_rows * this->n_cols;
     // generate random doubles
-    cilk_for(int i=0; i<length; ++i) this->data[i] = random_double();
+    for(int i=0; i<length; ++i) this->data[i] = random_double();
   }
 };
 
@@ -195,14 +215,14 @@ private:
 
   void sigmoid(Mat *mat){
     int length = mat->get_length();
-    cilk_for(int i=0; i<length; ++i){
+    for(int i=0; i<length; ++i){
       mat->data[i] = 1.0/(1.0+exp(-1*mat->data[i]));
     }
   }
   Mat* sigmoid_derivative(Mat *mat){
     Mat *new_mat = new Mat(mat->n_rows, mat->n_cols);
     int length = mat->get_length();
-    cilk_for(int i=0; i<length; ++i){
+    for(int i=0; i<length; ++i){
       new_mat->data[i] = (mat->data[i])*(1-mat->data[i]);
     }
     return new_mat;
@@ -222,18 +242,12 @@ public:
     syn1 = new Mat(n_hidden,n_output,true);
   }
   void train(string path_x, string path_y, int n_epoch, int n_sample){
-    // variables for the timer
-    struct timespec start_time;
-    struct timespec end_time;
-    long msec;
-
     data_train = new Dataset();
     data_train->load_x("dataset/data_train_x.csv", n_sample, n_input);
     data_train->load_y("dataset/data_train_y.csv", n_sample, 1);
     cout << "Succesfully loaded train dataset. \nTraining ... \n";
 
-    // run for n_epochs
-    clock_gettime(CLOCK_MONOTONIC,&start_time);
+    Timer *train_timer = new Timer();
     while(n_epoch--){
       // one full pass through the sample
       for(int i=0; i<data_train->x->size(); ++i){
@@ -255,23 +269,16 @@ public:
         this->update_weights(syn0,layer0, layer1_delta);
       }
     }
-    clock_gettime(CLOCK_MONOTONIC,&end_time);
-    msec = (end_time.tv_sec - start_time.tv_sec)*1000 + (end_time.tv_nsec - start_time.tv_nsec)/1000000;
-    cout << "Took: " << msec << " msec to TRAIN\n";
+    train_timer->stop(" to TRAIN");
   }
   void test(string path_x, string path_y, int n_sample){
-    // variables for the timer
-    struct timespec start_time;
-    struct timespec end_time;
-    long msec;
-
     data_test = new Dataset();
     data_test->load_x(path_x, n_sample, n_input);
     data_test->load_y(path_y, n_sample, n_output);
     cout << "Succesfully loaded train dataset. \nTraining ... \n";
 
     int error_counter = 0;
-    clock_gettime(CLOCK_MONOTONIC,&start_time);
+    Timer *test_timer = new Timer();
     cilk_for(int i=0; i<data_test->x->size(); ++i){
       // Forward pass
       Mat *layer0 = data_test->x->at(i);
@@ -286,9 +293,7 @@ public:
       int err = nearbyint(y->data[0]) - nearbyint(layer2->data[0]);
       if(err != 0) ++error_counter;
     }
-    clock_gettime(CLOCK_MONOTONIC,&end_time);
-    msec = (end_time.tv_sec - start_time.tv_sec)*1000 + (end_time.tv_nsec - start_time.tv_nsec)/1000000;
-    cout << "Took: " << msec << " msec to TEST\n";
+    test_timer->stop(" to test");
     cout << "Number of wrong predictions: " << error_counter << " out of " << n_sample << " samples." <<endl;
   }
 };
@@ -310,7 +315,17 @@ int main(int argc, char** argv){
   string test_x_aug = "dataset/data_test_x_aug.csv";
   string test_y = "dataset/data_test_y.csv";
 
-  NeuralNetwork *NN = new NeuralNetwork(n_input_aug,n_hidden_neurons,n_output);
-  NN->train(train_x_aug,train_y,4,n_train);
-  NN->test(test_x_aug,test_y,n_test);
+  // NeuralNetwork *NN = new NeuralNetwork(n_input_aug,n_hidden_neurons,n_output);
+  // NN->train(train_x_aug,train_y,4,n_train);
+  // NN->test(test_x_aug,test_y,n_test);
+
+  int counter = 10;
+  int n = 5000;
+  while(counter--){
+    Mat *mat1 = new Mat(n,n,true);
+    Mat *mat2 = new Mat(n,n,true);
+    Timer *timer = new Timer();
+    Mat *mat3 = mat1->operator-(mat2);
+    timer->stop(" to dor product ");
+  }
 }
