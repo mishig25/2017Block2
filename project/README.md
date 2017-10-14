@@ -12,10 +12,10 @@ To run:
 g++ -o serial serial.cpp
 ./serial
 ```
-* [Parallel Neural Networks [C++, CilkPlus]](https://github.com/mishig25/2017Block2/blob/master/project/cilk.cpp) - C++ file that contains custom Matrix and Neural Networks classes and uses CilkPlus for parallelization to achieve speedup in execution.
+* [Parallel Neural Networks [C++, OpenMP]](https://github.com/mishig25/2017Block2/blob/master/project/openmp.cpp) - C++ file that contains custom Matrix and Neural Networks classes and uses OpenMP for parallelization to achieve speedup in execution.
 
 To run:
 ```
-g++ -fcilkplus -o cilk cilk.cpp
-./cilk
+g++ -fopenmp -o openmp openmp.cpp
+./openmp
 ```
