@@ -18,6 +18,25 @@
 
 using namespace std;
 
+class Timer{
+private:
+  struct timespec start_time;
+  struct timespec end_time;
+  long msec;
+  void start(){
+    clock_gettime(CLOCK_MONOTONIC,&start_time);
+  }
+public:
+  Timer(){
+    this->start();
+  }
+  void stop(string arg){
+    clock_gettime(CLOCK_MONOTONIC,&end_time);
+    msec = (end_time.tv_sec - start_time.tv_sec)*1000 + (end_time.tv_nsec - start_time.tv_nsec)/1000000;
+    cout << "Took: " << msec << " msec" << arg << endl;
+  }
+};
+
 class Mat{
 public:
   int n_rows;
@@ -219,18 +238,12 @@ public:
     syn1 = new Mat(n_hidden,n_output,true);
   }
   void train(string path_x, string path_y, int n_epoch, int n_sample){
-    // variables for the timer
-    struct timespec start_time;
-    struct timespec end_time;
-    long msec;
-
     data_train = new Dataset();
     data_train->load_x("dataset/data_train_x.csv", n_sample, n_input);
     data_train->load_y("dataset/data_train_y.csv", n_sample, 1);
     cout << "Succesfully loaded train dataset. \nTraining ... \n";
 
-    // run for n_epochs
-    clock_gettime(CLOCK_MONOTONIC,&start_time);
+    Timer *train_timer = new Timer();
     while(n_epoch--){
       // one full pass through the sample
       for(int i=0; i<data_train->x->size(); ++i){
@@ -252,23 +265,16 @@ public:
         this->update_weights(syn0,layer0, layer1_delta);
       }
     }
-    clock_gettime(CLOCK_MONOTONIC,&end_time);
-    msec = (end_time.tv_sec - start_time.tv_sec)*1000 + (end_time.tv_nsec - start_time.tv_nsec)/1000000;
-    cout << "Took: " << msec << " msec to TRAIN\n";
+    train_timer->stop(" to TRAIN");
   }
   void test(string path_x, string path_y, int n_sample){
-    // variables for the timer
-    struct timespec start_time;
-    struct timespec end_time;
-    long msec;
-
     data_test = new Dataset();
     data_test->load_x(path_x, n_sample, n_input);
     data_test->load_y(path_y, n_sample, n_output);
     cout << "Succesfully loaded train dataset. \nTraining ... \n";
 
     int error_counter = 0;
-    clock_gettime(CLOCK_MONOTONIC,&start_time);
+    Timer *test_timer = new Timer();
     for(int i=0; i<data_test->x->size(); ++i){
       // Forward pass
       Mat *layer0 = data_test->x->at(i);
@@ -283,9 +289,7 @@ public:
       int err = nearbyint(y->data[0]) - nearbyint(layer2->data[0]);
       if(err != 0) ++error_counter;
     }
-    clock_gettime(CLOCK_MONOTONIC,&end_time);
-    msec = (end_time.tv_sec - start_time.tv_sec)*1000 + (end_time.tv_nsec - start_time.tv_nsec)/1000000;
-    cout << "Took: " << msec << " msec to TEST\n";
+    test_timer->stop(" to test");
     cout << "Number of wrong predictions: " << error_counter << " out of " << n_sample << " samples." <<endl;
   }
 };
