@@ -295,17 +295,20 @@ int main(int argc, char** argv){
   int n_train = 2534;
   int n_test = 634;
   int n_input = 20;
+  int n_input_aug = 100;
   int n_output = 1;
-  int n_hidden_neurons = 50;
+  int n_hidden_neurons = 100;
 
   // dataset paths
   string train_x = "dataset/data_train_x.csv";
+  string train_x_aug = "dataset/data_train_x_aug.csv";
   string train_y = "dataset/data_train_y.csv";
   string test_x = "dataset/data_test_x.csv";
+  string test_x_aug = "dataset/data_test_x_aug.csv";
   string test_y = "dataset/data_test_y.csv";
 
-  NeuralNetwork *NN = new NeuralNetwork(n_input,n_hidden_neurons,n_output);
-  NN->train(train_x,train_y,4,n_train);
-  NN->test(test_x,test_y,n_test);
+  NeuralNetwork *NN = new NeuralNetwork(n_input_aug,n_hidden_neurons,n_output);
+  NN->train(train_x_aug,train_y,4,n_train);
+  NN->test(test_x_aug,test_y,n_test);
 
 }
