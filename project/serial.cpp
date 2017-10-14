@@ -293,19 +293,19 @@ int main(int argc, char** argv){
   string test_x_aug = "dataset/data_test_x_aug.csv";
   string test_y = "dataset/data_test_y.csv";
 
-  // NeuralNetwork *NN = new NeuralNetwork(n_input_aug,n_hidden_neurons,n_output);
-  // NN->train(train_x_aug,train_y,4,n_train);
-  // NN->test(test_x_aug,test_y,n_test);
+  NeuralNetwork *NN = new NeuralNetwork(n_input_aug,n_hidden_neurons,n_output);
+  NN->train(train_x_aug,train_y,4,n_train);
+  NN->test(test_x_aug,test_y,n_test);
 
-  int counter = 10;
-  int n = 2000;
-  while(counter--){
-    Mat *mat1 = new Mat(n,n,true);
-    // Mat *mat2 = new Mat(n,n,true);
-    Timer *timer = new Timer();
-    Mat *mat3 = mat1->transpose();
-    timer->stop(" to transpose ");
-  }
+  // int counter = 10;
+  // int n = 400;
+  // while(counter--){
+  //   Mat *mat1 = new Mat(n,n,true);
+  //   Mat *mat2 = new Mat(n,n,true);
+  //   Timer *timer = new Timer();
+  //   Mat *mat3 = mat1->dot(mat2);
+  //   timer->stop(" to dot ");
+  // }
 
   // checking dot product preformance
   // double arr1[] = {1,2,3,4,5,6};

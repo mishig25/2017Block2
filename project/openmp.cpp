@@ -79,11 +79,14 @@ public:
     double* a = this->data;
     double* b = other_mat->data;
     double* c = new_mat->data;
-    #pragma omp parallel for
-    for(i=0; i<this->n_rows; ++i){
-      for(j=0; j<other_mat->n_cols; ++j){
-        for(k=0; k<other_mat->n_rows; ++k){
-          c[i*(new_mat->n_cols)+j] += a[i*(this->n_cols)+k] * b[k*(other_mat->n_cols)+j];
+    #pragma omp parallel shared(a,b,c) private(i,j,k)
+    {
+      #pragma omp for schedule(static)
+      for(i=0; i<this->n_rows; ++i){
+        for(j=0; j<other_mat->n_cols; ++j){
+          for(k=0; k<other_mat->n_rows; ++k){
+            c[i*(new_mat->n_cols)+j] += a[i*(this->n_cols)+k] * b[k*(other_mat->n_cols)+j];
+          }
         }
       }
     }
@@ -267,6 +270,7 @@ public:
 
     int error_counter = 0;
     Timer *test_timer = new Timer();
+    #pragma omp parallel for reduction(+:error_counter)
     for(int i=0; i<data_test->x->size(); ++i){
       // Forward pass
       Mat *layer0 = data_test->x->at(i);
@@ -303,19 +307,19 @@ int main(int argc, char** argv){
   string test_x_aug = "dataset/data_test_x_aug.csv";
   string test_y = "dataset/data_test_y.csv";
 
-  // NeuralNetwork *NN = new NeuralNetwork(n_input_aug,n_hidden_neurons,n_output);
-  // NN->train(train_x_aug,train_y,4,n_train);
-  // NN->test(test_x_aug,test_y,n_test);
+  NeuralNetwork *NN = new NeuralNetwork(n_input_aug,n_hidden_neurons,n_output);
+  NN->train(train_x_aug,train_y,4,n_train);
+  NN->test(test_x_aug,test_y,n_test);
 
-  int counter = 10;
-  int n = 2000;
-  while(counter--){
-    Mat *mat1 = new Mat(n,n,true);
-    // Mat *mat2 = new Mat(n,n,true);
-    Timer *timer = new Timer();
-    Mat *mat3 = mat1->transpose();
-    timer->stop(" to transpose ");
-  }
+  // int counter = 10;
+  // int n = 400;
+  // while(counter--){
+  //   Mat *mat1 = new Mat(n,n,true);
+  //   Mat *mat2 = new Mat(n,n,true);
+  //   Timer *timer = new Timer();
+  //   Mat *mat3 = mat1->dot(mat2);
+  //   timer->stop(" to dot ");
+  // }
 
   // checking dot product preformance
   // double arr1[] = {1,2,3,4,5,6};
