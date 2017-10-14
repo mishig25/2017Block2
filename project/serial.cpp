@@ -1,9 +1,9 @@
 /**
  * Simple Neural Network (Multi-Layer Perceptron)
- * class written completely in vanilla C++
+ * program written completely in vanilla C++
  *
  * @author  Mishig Davaadorj
- * @version 1.0, 10/11/17
+ * @version 1.0, 10/15/17
  */
 
 #include <iostream>
@@ -18,6 +18,9 @@
 
 using namespace std;
 
+/**
+ * Timer class for recording time
+ */
 class Timer{
 private:
   struct timespec start_time;
@@ -37,6 +40,11 @@ public:
   }
 };
 
+/**
+ * Matrix class for
+ * creation of matrices and operations
+ * on them
+ */
 class Mat{
 private:
   double random_double(){
@@ -128,6 +136,10 @@ public:
   }
 };
 
+/**
+ * Dataset class for loading CSV
+ * files into matrices
+ */
 class Dataset{
 public:
   vector<Mat*> *x;
@@ -165,6 +177,10 @@ public:
   }
 };
 
+/**
+ * Neural Network class
+ * that has one hidden layer
+ */
 class NeuralNetwork{
 private:
   int n_input;
