@@ -317,23 +317,4 @@ int main(int argc, char** argv){
   NN->train(train_x_aug,train_y,4,n_train);
   NN->test(test_x_aug,test_y,n_test);
 
-  // int counter = 10;
-  // int n = 400;
-  // while(counter--){
-  //   Mat *mat1 = new Mat(n,n,true);
-  //   Mat *mat2 = new Mat(n,n,true);
-  //   Timer *timer = new Timer();
-  //   Mat *mat3 = mat1->matmult(mat2);
-  //   timer->stop(" to matmult ");
-  // }
-
-  // checking matmult product preformance
-  // double arr1[] = {1,2,3,4,5,6};
-  // double arr2[] = {1,4,2,5,3,6};
-  // Mat *mat1 = new Mat(2,3);
-  // Mat *mat2 = new Mat(3,2);
-  // mat1->data = arr1;
-  // mat2->data = arr2;
-  // Mat *mat3 = mat1->matmult(mat2);
-  // mat3->print();
 }

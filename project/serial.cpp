@@ -67,10 +67,10 @@ public:
     data = new double[this->n_rows * this->n_cols];
     if(random) this->random_mat();
   }
-  Mat* dot(Mat *other_mat){
+  Mat* matmult(Mat *other_mat){
     if(this->n_cols != other_mat->n_rows){
       // riase exception
-      throw invalid_argument("\nMatrices dimensions do NOT match for dot product\n");
+      throw invalid_argument("\nMatrices dimensions do NOT match for matmult product\n");
     }
     Mat *new_mat = new Mat(this->n_rows, other_mat->n_cols);
     for(int i=0; i<this->n_rows; ++i){
@@ -207,7 +207,7 @@ private:
   }
   void update_weights(Mat *syn,Mat *layer,Mat *delta){
     Mat *layer_T = layer->transpose();
-    Mat *updates = layer_T->dot(delta);
+    Mat *updates = layer_T->matmult(delta);
     int length = updates->get_length();
     syn->add(updates);
   }
@@ -231,16 +231,16 @@ public:
       for(int i=0; i<data_train->x->size(); ++i){
         // Forward pass
         Mat *layer0 = data_train->x->at(i);
-        Mat *layer1 = layer0->dot(syn0);
+        Mat *layer1 = layer0->matmult(syn0);
         this->sigmoid(layer1);
-        Mat *layer2 = layer1->dot(syn1);
+        Mat *layer2 = layer1->matmult(syn1);
         this->sigmoid(layer2);
         // Backprop
         Mat *y = data_train->y->at(i);
         Mat *layer2_error = y->operator-(layer2);
         Mat *layer2_delta = layer2_error->operator*(this->sigmoid_derivative(layer2));
 
-        Mat *layer1_error = layer2_delta->dot(syn1->transpose());
+        Mat *layer1_error = layer2_delta->matmult(syn1->transpose());
         Mat *layer1_delta = layer1_error->operator*(this->sigmoid_derivative(layer1));
 
         this->update_weights(syn1,layer1, layer2_delta);
@@ -260,9 +260,9 @@ public:
     for(int i=0; i<data_test->x->size(); ++i){
       // Forward pass
       Mat *layer0 = data_test->x->at(i);
-      Mat *layer1 = layer0->dot(syn0);
+      Mat *layer1 = layer0->matmult(syn0);
       this->sigmoid(layer1);
-      Mat *layer2 = layer1->dot(syn1);
+      Mat *layer2 = layer1->matmult(syn1);
       this->sigmoid(layer2);
       // Backprop
       Mat *y = data_test->y->at(i);
@@ -293,27 +293,8 @@ int main(int argc, char** argv){
   string test_x_aug = "dataset/data_test_x_aug.csv";
   string test_y = "dataset/data_test_y.csv";
 
-  // NeuralNetwork *NN = new NeuralNetwork(n_input_aug,n_hidden_neurons,n_output);
-  // NN->train(train_x_aug,train_y,4,n_train);
-  // NN->test(test_x_aug,test_y,n_test);
+  NeuralNetwork *NN = new NeuralNetwork(n_input_aug,n_hidden_neurons,n_output);
+  NN->train(train_x_aug,train_y,4,n_train);
+  NN->test(test_x_aug,test_y,n_test);
 
-  // int counter = 10;
-  // int n = 400;
-  // while(counter--){
-  //   Mat *mat1 = new Mat(n,n,true);
-  //   Mat *mat2 = new Mat(n,n,true);
-  //   Timer *timer = new Timer();
-  //   Mat *mat3 = mat1->dot(mat2);
-  //   timer->stop(" to dot ");
-  // }
-
-  // checking dot product preformance
-  // double arr1[] = {1,2,3,4,5,6};
-  // double arr2[] = {1,4,2,5,3,6};
-  // Mat *mat1 = new Mat(2,3);
-  // Mat *mat2 = new Mat(3,2);
-  // mat1->data = arr1;
-  // mat2->data = arr2;
-  // Mat *mat3 = mat1->dot(mat2);
-  // mat3->print();
 }
