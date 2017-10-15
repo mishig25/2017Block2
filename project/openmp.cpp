@@ -57,6 +57,7 @@ private:
     srand( (unsigned)time( NULL ) );
     int length = this->n_rows * this->n_cols;
     // generate random doubles
+    #pragma omp parallel for
     for(int i=0; i<length; ++i) this->data[i] = random_double();
   }
 public:
@@ -69,7 +70,7 @@ public:
     data = new double[this->n_rows * this->n_cols];
     if(random) this->random_mat();
   }
-  Mat* dot(Mat *other_mat){
+  Mat* matmult(Mat *other_mat){
     if(this->n_cols != other_mat->n_rows){
       // riase exception
       throw invalid_argument("\nMatrices dimensions do NOT match for dot product\n");
@@ -79,14 +80,19 @@ public:
     double* a = this->data;
     double* b = other_mat->data;
     double* c = new_mat->data;
+    // REFERNCE from: https://www.appentra.com/parallel-matrix-matrix-multiplication/
+    // lines 85-87
     #pragma omp parallel shared(a,b,c) private(i,j,k)
     {
       #pragma omp for schedule(static)
       for(i=0; i<this->n_rows; ++i){
         for(j=0; j<other_mat->n_cols; ++j){
+          double sum = 0.0;
+          #pragma omp parallel for reduction(+:sum)
           for(k=0; k<other_mat->n_rows; ++k){
-            c[i*(new_mat->n_cols)+j] += a[i*(this->n_cols)+k] * b[k*(other_mat->n_cols)+j];
+            sum += a[i*(this->n_cols)+k] * b[k*(other_mat->n_cols)+j];
           }
+          c[i*(new_mat->n_cols)+j] = sum;
         }
       }
     }
@@ -220,7 +226,7 @@ private:
   }
   void update_weights(Mat *syn,Mat *layer,Mat *delta){
     Mat *layer_T = layer->transpose();
-    Mat *updates = layer_T->dot(delta);
+    Mat *updates = layer_T->matmult(delta);
     int length = updates->get_length();
     syn->add(updates);
   }
@@ -244,16 +250,16 @@ public:
       for(int i=0; i<data_train->x->size(); ++i){
         // Forward pass
         Mat *layer0 = data_train->x->at(i);
-        Mat *layer1 = layer0->dot(syn0);
+        Mat *layer1 = layer0->matmult(syn0);
         this->sigmoid(layer1);
-        Mat *layer2 = layer1->dot(syn1);
+        Mat *layer2 = layer1->matmult(syn1);
         this->sigmoid(layer2);
         // Backprop
         Mat *y = data_train->y->at(i);
         Mat *layer2_error = y->operator-(layer2);
         Mat *layer2_delta = layer2_error->operator*(this->sigmoid_derivative(layer2));
 
-        Mat *layer1_error = layer2_delta->dot(syn1->transpose());
+        Mat *layer1_error = layer2_delta->matmult(syn1->transpose());
         Mat *layer1_delta = layer1_error->operator*(this->sigmoid_derivative(layer1));
 
         this->update_weights(syn1,layer1, layer2_delta);
@@ -274,9 +280,9 @@ public:
     for(int i=0; i<data_test->x->size(); ++i){
       // Forward pass
       Mat *layer0 = data_test->x->at(i);
-      Mat *layer1 = layer0->dot(syn0);
+      Mat *layer1 = layer0->matmult(syn0);
       this->sigmoid(layer1);
-      Mat *layer2 = layer1->dot(syn1);
+      Mat *layer2 = layer1->matmult(syn1);
       this->sigmoid(layer2);
       // Backprop
       Mat *y = data_test->y->at(i);
@@ -317,17 +323,17 @@ int main(int argc, char** argv){
   //   Mat *mat1 = new Mat(n,n,true);
   //   Mat *mat2 = new Mat(n,n,true);
   //   Timer *timer = new Timer();
-  //   Mat *mat3 = mat1->dot(mat2);
-  //   timer->stop(" to dot ");
+  //   Mat *mat3 = mat1->matmult(mat2);
+  //   timer->stop(" to matmult ");
   // }
 
-  // checking dot product preformance
+  // checking matmult product preformance
   // double arr1[] = {1,2,3,4,5,6};
   // double arr2[] = {1,4,2,5,3,6};
   // Mat *mat1 = new Mat(2,3);
   // Mat *mat2 = new Mat(3,2);
   // mat1->data = arr1;
   // mat2->data = arr2;
-  // Mat *mat3 = mat1->dot(mat2);
+  // Mat *mat3 = mat1->matmult(mat2);
   // mat3->print();
 }

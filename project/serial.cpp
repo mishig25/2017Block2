@@ -293,9 +293,9 @@ int main(int argc, char** argv){
   string test_x_aug = "dataset/data_test_x_aug.csv";
   string test_y = "dataset/data_test_y.csv";
 
-  NeuralNetwork *NN = new NeuralNetwork(n_input_aug,n_hidden_neurons,n_output);
-  NN->train(train_x_aug,train_y,4,n_train);
-  NN->test(test_x_aug,test_y,n_test);
+  // NeuralNetwork *NN = new NeuralNetwork(n_input_aug,n_hidden_neurons,n_output);
+  // NN->train(train_x_aug,train_y,4,n_train);
+  // NN->test(test_x_aug,test_y,n_test);
 
   // int counter = 10;
   // int n = 400;
