@@ -253,7 +253,7 @@ public:
     data_test = new Dataset();
     data_test->load_x(path_x, n_sample, n_input);
     data_test->load_y(path_y, n_sample, n_output);
-    cout << "Succesfully loaded train dataset. \nTraining ... \n";
+    cout << "Succesfully loaded train dataset. \nTesting ... \n";
 
     int error_counter = 0;
     Timer *test_timer = new Timer();
@@ -271,8 +271,10 @@ public:
       int err = nearbyint(y->data[0]) - nearbyint(layer2->data[0]);
       if(err != 0) ++error_counter;
     }
-    test_timer->stop(" to test");
+    test_timer->stop(" to TEST");
     cout << "Number of wrong predictions: " << error_counter << " out of " << n_sample << " samples." <<endl;
+    int accuracy = 100 - (error_counter * 100 / 634);
+    cout << "Accuracy: " << accuracy << "\%\n";
   }
 };
 
